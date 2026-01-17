@@ -5,214 +5,121 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>GPA Strategist Dashboard</title>
     <link href="https://fonts.googleapis.com" rel="preconnect"/>
-    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.gstatic.com" crossorigin="" rel="preconnect"/>
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&family=Noto+Sans:wght@400;500;700&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.prod.js"></script>
 
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
             theme: {
                 extend: {
-                    colors: {
-                        "primary": "#0064A4","uci-blue": "#0064A4",
-                        "uci-gold": "#FFD200",
-                        "background-light": "#f6f7f8",
-                        "background-dark": "#101b22",
-                    },
-                    fontFamily: {
-                        "display": ["Lexend", "sans-serif"],
-                        "body": ["Noto Sans", "sans-serif"],
-                    },
-                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                    colors: { "uci-blue": "#0064A4", "uci-gold": "#FFD200", "background-light": "#f6f7f8" },
+                    fontFamily: { "display": ["Lexend", "sans-serif"], "body": ["Noto Sans", "sans-serif"] },
                 },
             },
         }
     </script>
 </head>
-<body class="bg-background-light dark:bg-background-dark font-display text-[#0d161b] min-h-screen flex flex-col overflow-x-hidden">
-    
-    <div id="app" class="flex flex-col min-h-screen">
+<body class="bg-background-light font-display text-[#0d161b] min-h-screen flex flex-col">
+
+    <div id="app" class="flex flex-col min-h-screen" v-cloak>
         
         <div class="w-full bg-white border-b border-[#e7eff3] sticky top-0 z-50">
-            <header class="flex items-center justify-between whitespace-nowrap px-4 md:px-10 py-3 max-w-[1440px] mx-auto w-full">
+            <header class="flex items-center justify-between px-4 md:px-10 py-3 max-w-[1440px] mx-auto w-full">
                 <div class="flex items-center gap-4 text-uci-blue">
                     <div class="size-8 flex items-center justify-center bg-uci-gold rounded-lg text-uci-blue">
                         <span class="material-symbols-outlined">school</span>
                     </div>
-                    <h2 class="text-uci-blue text-xl font-bold leading-tight tracking-tight">GPA Strategist</h2>
+                    <h2 class="text-uci-blue text-xl font-bold">GPA Strategist</h2>
                 </div>
-                <div class="flex flex-1 justify-end gap-8 items-center">
-                   <div class="text-xs font-medium hidden md:block" :class="errorMsg ? 'text-red-500' : 'text-green-600'">
-                       {{ errorMsg ? 'Offline Mode' : 'Connected to PeterPortal' }}
-                   </div>
-                   <div class="bg-center bg-no-repeat bg-cover rounded-full size-10 border-2 border-uci-gold" style='background-image: url("https://lh3.googleusercontent.com/a/default-user=s96-c");'></div>
+                <div class="hidden md:block text-xs font-bold" :class="statusColor">
+                    {{ statusText }}
                 </div>
             </header>
         </div>
 
-        <div class="flex-1 layout-container flex flex-col lg:flex-row gap-6 px-4 md:px-10 py-6 max-w-[1440px] mx-auto w-full">
+        <div class="flex-1 flex flex-col lg:flex-row gap-6 px-4 md:px-10 py-6 max-w-[1440px] mx-auto w-full">
             
             <div class="flex flex-col flex-1 gap-6 min-w-0">
                 <div class="flex flex-col gap-2">
-                    <h1 class="text-[#0d161b] tracking-tight text-3xl font-bold leading-tight">Find GE Courses</h1>
-                    <p class="text-[#4c7c9a] text-sm font-normal leading-normal">Browse courses by Department (e.g. ECON) and add them to forecast your GPA.</p>
+                    <h1 class="text-3xl font-bold">Find GE Courses</h1>
+                    <p class="text-sm text-gray-500">Search by Department (e.g. ECON, COMPSCI).</p>
                 </div>
 
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-[#e7eff3] flex flex-col md:flex-row gap-4 items-end md:items-center">
-                    <label class="flex flex-col w-full md:w-1/3 min-w-[200px]">
-                        <span class="text-[#0d161b] text-xs font-bold uppercase tracking-wider mb-2 text-opacity-70">Category</span>
-                        <div class="relative">
-                            <select v-model="selectedCategory" @change="searchCourses" class="appearance-none w-full bg-[#f8fafc] border border-[#cfdee7] text-[#0d161b] text-sm rounded-lg focus:ring-uci-blue focus:border-uci-blue block p-3 pr-10">
-                                <option value="Any">All Categories</option>
-                                <option value="GE-1A">Ia: Lower Division Writing</option>
-                                <option value="GE-2">II: Science & Technology</option>
-                                <option value="GE-3">III: Social & Behavioral</option>
-                                <option value="GE-4">IV: Arts and Humanities</option>
-                                <option value="GE-5">V: Quantitative Literacy</option>
-                            </select>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-[#4c7c9a]">
-                                <span class="material-symbols-outlined text-[20px]">expand_more</span>
-                            </div>
-                        </div>
-                    </label>
-                    <div class="flex-1 w-full">
-                        <span class="text-[#0d161b] text-xs font-bold uppercase tracking-wider mb-2 text-opacity-70 block">Search Department (e.g. ECON, COMPSCI)</span>
-                        <div class="relative w-full">
-                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                <span class="material-symbols-outlined text-[#4c7c9a]">search</span>
-                            </div>
-                            <input v-model="searchQuery" @keyup.enter="searchCourses" class="bg-[#f8fafc] border border-[#cfdee7] text-[#0d161b] text-sm rounded-lg focus:ring-uci-blue focus:border-uci-blue block w-full pl-10 p-3" placeholder="Enter department code (e.g. ECON)..." type="text"/>
-                        </div>
-                    </div>
-                    <button @click="searchCourses" class="bg-uci-blue text-white px-4 py-3 rounded-lg font-bold hover:bg-opacity-90 transition min-w-[100px] flex justify-center">
-                        <span v-if="loading" class="material-symbols-outlined animate-spin text-sm">progress_activity</span>
-                        <span v-else>Search</span>
+                <div class="bg-white p-4 rounded-xl shadow-sm border flex flex-col md:flex-row gap-4">
+                    <input v-model="searchQuery" @keyup.enter="searchCourses" class="flex-1 bg-gray-50 border border-gray-200 rounded-lg p-3" placeholder="Enter department (e.g. ECON)..." type="text"/>
+                    <button @click="searchCourses" class="bg-uci-blue text-white px-6 py-3 rounded-lg font-bold hover:opacity-90">
+                        {{ loading ? 'Loading...' : 'Search' }}
                     </button>
                 </div>
 
-                <div v-if="errorMsg" class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r shadow-sm">
-                    <div class="flex">
-                        <div class="flex-shrink-0">
-                            <span class="material-symbols-outlined text-yellow-500">wifi_off</span>
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm font-bold text-yellow-700">Connection Issue</p>
-                            <p class="text-sm text-yellow-700">{{ errorMsg }} <br><span class="opacity-75 font-normal">Showing demo data so you can test the UI.</span></p>
-                        </div>
-                    </div>
+                <div v-if="errorMsg" class="bg-yellow-50 border-l-4 border-yellow-400 p-4 text-yellow-700 text-sm font-medium">
+                    {{ errorMsg }}
                 </div>
 
                 <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                    <div v-if="loading" class="col-span-full py-10 text-center text-gray-500">Connecting to UCI Database...</div>
                     
-                    <div v-if="loading" class="col-span-full flex flex-col items-center py-10 text-gray-500">
-                        <span class="material-symbols-outlined animate-spin text-4xl text-uci-blue mb-2">progress_activity</span>
-                        <p>Fetching data from PeterPortal...</p>
+                    <div v-if="!loading && courses.length === 0" class="col-span-full py-10 text-center text-gray-500 border-2 border-dashed rounded-xl">
+                        No courses found. Try searching <b>ECON</b> or <b>BIO SCI</b>.
                     </div>
 
-                    <div v-if="!loading && courses.length === 0" class="col-span-full text-center py-10 text-gray-500 bg-gray-50 rounded-xl border border-dashed border-gray-300">
-                        <span class="material-symbols-outlined text-4xl mb-2">search_off</span>
-                        <p>No courses found for "{{searchQuery}}". <br>Try searching for a Department code like <b>ECON</b>, <b>COMPSCI</b>, or <b>BIO SCI</b>.</p>
-                    </div>
-
-                    <div v-for="course in courses" :key="course.id" class="flex flex-col bg-white rounded-xl shadow-sm border border-[#e7eff3] overflow-hidden hover:shadow-md transition-shadow group">
-                        <div class="p-5 flex gap-4 h-full">
-                            <div class="hidden sm:flex size-16 rounded-lg bg-blue-50 shrink-0 items-center justify-center text-uci-blue">
-                                <span class="material-symbols-outlined text-3xl">school</span>
+                    <div v-for="course in courses" :key="course.id" class="bg-white p-5 rounded-xl shadow-sm border hover:shadow-md transition flex gap-4">
+                        <div class="hidden sm:flex size-14 bg-blue-50 text-uci-blue items-center justify-center rounded-lg font-bold text-xl shrink-0">UCI</div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex justify-between items-start">
+                                <h3 class="font-bold text-uci-blue text-lg truncate">{{ course.id }}</h3>
+                                <span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full">GPA: {{ course.demoGPA || '3.50' }}</span>
                             </div>
-                            <div class="flex-1 flex flex-col">
-                                <div class="flex justify-between items-start mb-1">
-                                    <h3 class="text-lg font-bold text-uci-blue">{{ course.id }}</h3>
-                                    <div class="flex gap-2">
-                                        <span class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-xs font-bold px-2.5 py-1 rounded-full" title="Randomized GPA for Demo">
-                                            <span class="material-symbols-outlined text-[14px]">trending_up</span> {{ course.demoGPA || getRandomGPA() }}
-                                        </span>
-                                    </div>
-                                </div>
-                                <p class="text-[#0d161b] font-medium text-sm mb-1">{{ course.title }}</p>
-                                <p class="text-[#64748b] text-xs line-clamp-2 mb-4">{{ course.description || 'No description available.' }}</p>
-                                <div class="mt-auto flex justify-end">
-                                    <button @click="addToPlan(course)" class="flex items-center gap-2 bg-[#e7eff3] hover:bg-uci-gold hover:text-uci-blue text-uci-blue text-sm font-semibold py-2 px-4 rounded-lg transition-colors">
-                                        <span class="material-symbols-outlined text-[18px]">add_circle</span>
-                                        Add to Plan
-                                    </button>
-                                </div>
-                            </div>
+                            <p class="text-sm font-medium truncate">{{ course.title }}</p>
+                            <button @click="addToPlan(course)" class="mt-3 text-sm text-uci-blue font-bold flex items-center gap-1 hover:underline">
+                                <span class="material-symbols-outlined text-sm">add_circle</span> Add to Plan
+                            </button>
                         </div>
                     </div>
-
                 </div>
             </div>
 
-            <aside class="w-full lg:w-[400px] xl:w-[450px] shrink-0 flex flex-col gap-6">
-                <div class="sticky top-24">
-                    <div class="bg-white rounded-xl shadow-lg border-t-4 border-t-uci-gold border-x border-b border-b-gray-200 p-6 flex flex-col gap-6">
-                        <div class="flex items-center gap-3 border-b border-gray-100 pb-4">
-                            <span class="material-symbols-outlined text-uci-gold text-3xl">analytics</span>
-                            <h2 class="text-[#0d161b] text-xl font-bold">My GPA Scenario</h2>
-                        </div>
+            <aside class="w-full lg:w-[400px] flex flex-col gap-6">
+                <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-t-uci-gold sticky top-24">
+                    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-uci-gold">analytics</span> My GPA
+                    </h2>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <label class="text-xs font-bold text-gray-500 uppercase">Current GPA
+                            <input v-model.number="currentGPA" class="w-full mt-1 border-gray-200 rounded p-2" type="number" step="0.01">
+                        </label>
+                        <label class="text-xs font-bold text-gray-500 uppercase">Units Done
+                            <input v-model.number="currentUnits" class="w-full mt-1 border-gray-200 rounded p-2" type="number">
+                        </label>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-lg p-4 mb-4 max-h-[300px] overflow-y-auto">
+                        <p class="text-xs font-bold text-gray-400 mb-2 uppercase">Planned Courses</p>
+                        <div v-if="plannedCourses.length === 0" class="text-center text-sm text-gray-400 py-4">List is empty</div>
                         
-                        <div class="grid grid-cols-2 gap-4">
-                            <label class="flex flex-col gap-2">
-                                <span class="text-xs font-bold text-[#4c7c9a] uppercase">Current GPA</span>
-                                <input v-model.number="currentGPA" class="w-full bg-[#f8fafc] border border-[#cfdee7] rounded-lg p-3 text-[#0d161b] font-bold focus:ring-uci-blue focus:border-uci-blue" step="0.01" type="number"/>
-                            </label>
-                            <label class="flex flex-col gap-2">
-                                <span class="text-xs font-bold text-[#4c7c9a] uppercase">Units Taken</span>
-                                <input v-model.number="currentUnits" class="w-full bg-[#f8fafc] border border-[#cfdee7] rounded-lg p-3 text-[#0d161b] font-bold focus:ring-uci-blue focus:border-uci-blue" type="number"/>
-                            </label>
-                        </div>
-
-                        <div class="flex flex-col gap-3">
-                            <div class="flex items-center justify-between">
-                                <h3 class="font-bold text-[#0d161b] text-sm">Planned Quarter</h3>
-                                <span class="text-xs bg-uci-blue/10 text-uci-blue font-bold px-2 py-1 rounded">{{ plannedUnits }} Units</span>
+                        <div v-for="(course, index) in plannedCourses" :key="index" class="flex items-center justify-between mb-2 bg-white p-2 rounded border">
+                            <div class="truncate flex-1 mr-2">
+                                <div class="font-bold text-xs text-uci-blue">{{ course.id }}</div>
                             </div>
-                            
-                            <div class="space-y-3 max-h-[300px] overflow-y-auto">
-                                <div v-if="plannedCourses.length === 0" class="border-2 border-dashed border-[#cfdee7] rounded-lg p-6 text-center">
-                                    <p class="text-xs text-[#4c7c9a] font-medium">Add courses from the left to start calculating</p>
-                                </div>
-
-                                <div v-for="(course, index) in plannedCourses" :key="index" class="flex items-center justify-between bg-[#f8fafc] p-3 rounded-lg border border-[#e7eff3]">
-                                    <div class="flex-1 min-w-0">
-                                        <div class="flex justify-between items-center mr-2">
-                                            <p class="font-bold text-uci-blue text-sm truncate">{{ course.id }}</p>
-                                            <button @click="removeCourse(index)" class="text-red-400 hover:text-red-600 text-xs font-bold px-1">✕</button>
-                                        </div>
-                                        <p class="text-xs text-gray-500 truncate">{{ course.title }}</p>
-                                    </div>
-                                    <div class="flex flex-col items-end gap-1 shrink-0">
-                                        <input v-model.number="course.units" class="w-12 text-xs border border-gray-300 rounded px-1 py-0.5 text-center" type="number" placeholder="Units">
-                                        <select v-model.number="course.gradePoint" class="bg-white border border-gray-200 text-xs font-medium rounded py-1 px-1 text-[#0d161b] focus:ring-uci-blue focus:border-uci-blue cursor-pointer w-[70px]">
-                                            <option :value="4.0">A (4.0)</option>
-                                            <option :value="3.7">A- (3.7)</option>
-                                            <option :value="3.3">B+ (3.3)</option>
-                                            <option :value="3.0">B (3.0)</option>
-                                            <option :value="2.7">B- (2.7)</option>
-                                            <option :value="2.3">C+ (2.3)</option>
-                                            <option :value="2.0">C (2.0)</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
+                            <select v-model.number="course.gradePoint" class="text-xs border-gray-200 rounded py-1 px-1 w-20">
+                                <option :value="4.0">A (4.0)</option>
+                                <option :value="3.7">A- (3.7)</option>
+                                <option :value="3.3">B+ (3.3)</option>
+                                <option :value="3.0">B (3.0)</option>
+                            </select>
+                            <button @click="removeCourse(index)" class="ml-2 text-red-400 hover:text-red-600">✕</button>
                         </div>
+                    </div>
 
-                        <div class="bg-uci-blue rounded-xl p-6 text-white text-center shadow-md relative overflow-hidden group/result transition-all duration-500">
-                            <div class="relative z-10">
-                                <p class="text-sm font-medium uppercase tracking-widest text-blue-100 mb-1">Projected GPA</p>
-                                <p class="text-5xl font-bold tracking-tight text-white drop-shadow-sm">{{ projectedGPA }}</p>
-                                <div class="flex items-center justify-center gap-2 mt-2 text-xs font-medium text-blue-200">
-                                    <span v-if="projectedGPA > currentGPA" class="material-symbols-outlined text-sm text-green-300">arrow_upward</span>
-                                    <span v-else-if="projectedGPA < currentGPA" class="material-symbols-outlined text-sm text-red-300">arrow_downward</span>
-                                    <span v-else class="material-symbols-outlined text-sm">remove</span>
-                                    {{ Math.abs(projectedGPA - currentGPA).toFixed(2) }} change
-                                </div>
-                            </div>
-                        </div>
+                    <div class="bg-uci-blue text-white p-6 rounded-xl text-center">
+                        <p class="text-sm uppercase opacity-70">Projected GPA</p>
+                        <p class="text-5xl font-bold my-2">{{ projectedGPA }}</p>
                     </div>
                 </div>
             </aside>
@@ -220,22 +127,35 @@
     </div>
 
     <script>
+        // !!! 修复 2: 全局错误拦截 (白屏终结者) !!!
+        window.onerror = function(msg, source, lineno, colno, error) {
+            alert("代码出错了！\nError: " + msg + "\nLine: " + lineno);
+            return false;
+        };
+
         const { createApp, ref, computed, onMounted, watch } = Vue;
 
         createApp({
             setup() {
                 const courses = ref([]);
                 const loading = ref(false);
-                const errorMsg = ref(''); 
-                const searchQuery = ref('ECON'); // 默认搜索 ECON，因为数据量适中，加载快
-                const selectedCategory = ref('Any');
+                const errorMsg = ref('');
+                const searchQuery = ref('ECON'); 
                 
-                // 本地存储
-                const savedData = JSON.parse(localStorage.getItem('uci-gpa-data') || '{}');
+                // !!! 修复 3: 安全读取 LocalStorage (防止崩溃) !!!
+                let savedData = {};
+                try {
+                    savedData = JSON.parse(localStorage.getItem('uci-gpa-data')) || {};
+                } catch (e) {
+                    console.error("Cache corrupted, resetting.");
+                    localStorage.removeItem('uci-gpa-data');
+                }
+
                 const currentGPA = ref(savedData.currentGPA || 3.40);
                 const currentUnits = ref(savedData.currentUnits || 45);
                 const plannedCourses = ref(savedData.plannedCourses || []);
 
+                // 自动保存
                 watch([currentGPA, currentUnits, plannedCourses], () => {
                     localStorage.setItem('uci-gpa-data', JSON.stringify({
                         currentGPA: currentGPA.value,
@@ -244,95 +164,71 @@
                     }));
                 }, { deep: true });
 
-                const plannedUnits = computed(() => plannedCourses.value.reduce((sum, c) => sum + (c.units || 4), 0));
-
                 const projectedGPA = computed(() => {
-                    const currentPoints = currentGPA.value * currentUnits.value;
-                    let plannedPoints = 0;
-                    plannedCourses.value.forEach(course => {
-                        plannedPoints += (course.gradePoint * (course.units || 4));
+                    const cPoints = currentGPA.value * currentUnits.value;
+                    let pPoints = 0;
+                    let pUnits = 0;
+                    
+                    plannedCourses.value.forEach(c => {
+                        const u = Number(c.units || 4); // 强制转为数字
+                        pPoints += (c.gradePoint * u);
+                        pUnits += u;
                     });
-                    const totalUnits = currentUnits.value + plannedUnits.value;
-                    return totalUnits === 0 ? 0 : (totalPoints / totalUnits).toFixed(2);
+
+                    const totalUnits = currentUnits.value + pUnits;
+                    return totalUnits === 0 ? "0.00" : ((cPoints + pPoints) / totalUnits).toFixed(2);
                 });
 
-                // 搜索核心函数
+                const statusColor = computed(() => errorMsg.value ? 'text-yellow-600' : 'text-green-600');
+                const statusText = computed(() => errorMsg.value ? 'Offline / Demo Mode' : 'Connected to API');
+
                 const searchCourses = async () => {
                     loading.value = true;
-                    errorMsg.value = ''; 
-                    courses.value = []; 
-
-                    const query = searchQuery.value.trim().toUpperCase();
-                    if (!query) {
-                        loading.value = false;
-                        return;
-                    }
+                    errorMsg.value = '';
+                    courses.value = [];
+                    
+                    const query = searchQuery.value.trim().toUpperCase() || 'ECON';
 
                     try {
-                        console.log(`Searching: ${query}...`);
+                        console.log("Fetching: " + query);
+                        const res = await fetch(`https://api.peterportal.org/rest/v0/courses?department=${query}`);
+                        if (!res.ok) throw new Error("API Error");
                         
-                        // 尝试请求 API (使用 department 参数，防止 all 接口超时)
-                        const response = await fetch(`https://api.peterportal.org/rest/v0/courses?department=${query}`);
+                        const data = await res.json();
+                        courses.value = data.slice(0, 20); // 限制显示数量
                         
-                        if (!response.ok) {
-                            throw new Error(`API Error: ${response.status}`);
-                        }
-
-                        let data = await response.json();
-                        
-                        // 前端筛选 GE
-                        let filtered = data;
-                        if (selectedCategory.value !== 'Any') {
-                            filtered = filtered.filter(c => c.ge_list && c.ge_list.includes(selectedCategory.value));
-                        }
-                        
-                        // 只要有数据就显示
-                        if (filtered.length > 0) {
-                            courses.value = filtered.slice(0, 30);
-                        } else {
-                            // 如果搜部门没结果，可能用户搜的是具体课号 'BIO SCI 93'，这里做一个简单处理
-                            // 为了稳健，我们暂时报空，或建议用户只搜部门
-                        }
-
                     } catch (err) {
                         console.error(err);
-                        errorMsg.value = "Failed to connect to PeterPortal API. (Network or CORS issue)";
-                        
-                        // !!! Fallback: 加载演示数据 !!!
+                        errorMsg.value = "无法连接 PeterPortal API，已切换到演示数据。";
+                        // 演示数据
                         courses.value = [
-                            { id: 'DEMO 101', title: 'Demo Mode: API Connection Failed', description: 'This is a sample course because the live data could not be loaded. Please check your network.', ge_list: ['GE-4'], demoGPA: '4.00' },
-                            { id: 'ECON 20A', title: 'Basic Economics I', description: 'Microeconomics analysis of behavior.', ge_list: ['GE-3'], demoGPA: '2.95' },
-                            { id: 'I&C SCI 31', title: 'Intro to Programming', description: 'Python programming basics.', ge_list: ['GE-2'], demoGPA: '3.55' },
-                            { id: 'WRITING 39C', title: 'Argument & Research', description: 'Advanced writing and rhetoric.', ge_list: ['GE-1A'], demoGPA: '3.80' },
-                            { id: 'BIO SCI 93', title: 'DNA to Organisms', description: 'Cell biology and genetics.', ge_list: ['GE-2'], demoGPA: '3.10' }
+                            { id: 'DEMO 101', title: 'Network Error Demo', demoGPA: '4.00' },
+                            { id: 'ECON 20A', title: 'Basic Economics I', demoGPA: '2.95' },
+                            { id: 'WRITING 39C', title: 'Argument & Research', demoGPA: '3.80' }
                         ];
                     } finally {
                         loading.value = false;
                     }
                 };
 
-                const addToPlan = (course) => {
+                const addToPlan = (c) => {
                     plannedCourses.value.push({
-                        id: course.id,
-                        title: course.title,
+                        id: c.id,
+                        title: c.title,
                         units: 4,
                         gradePoint: 4.0
                     });
                 };
 
-                const removeCourse = (index) => plannedCourses.value.splice(index, 1);
-                
-                const getRandomGPA = () => (Math.random() * (4.0 - 2.8) + 2.8).toFixed(2);
+                const removeCourse = (i) => plannedCourses.value.splice(i, 1);
 
-                onMounted(() => {
-                    searchCourses();
-                });
+                onMounted(() => searchCourses());
 
                 return {
-                    courses, loading, errorMsg, searchQuery, selectedCategory,
+                    courses, loading, errorMsg, searchQuery,
                     currentGPA, currentUnits, plannedCourses,
-                    plannedUnits, projectedGPA,
-                    searchCourses, addToPlan, removeCourse, getRandomGPA
+                    projectedGPA, statusColor, statusText,
+                    searchCourses, addToPlan, removeCourse
                 };
             }
         }).mount('#app');
